@@ -1,0 +1,8 @@
+.idea
+.idea/*
+bin
+bin/*
+teamFZ*
+*.java
+*.mas2j
+*.iml
