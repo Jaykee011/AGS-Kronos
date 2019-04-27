@@ -3,6 +3,7 @@
 bin
 bin/*
 teamFZ*
-*.java
-*.mas2j
-*.iml
+*java*
+*mas2j*
+*iml
+*asl~

@@ -4,18 +4,18 @@
 
 MAS miners {
     infrastructure: Centralised
-    environment: mining.MiningPlanet(1, 50,yes)
+    environment: mining.MiningPlanet(2, 20,yes)
         // parameters: 1. environment configuration id (from 1 to 3)
         //             2. sleep time (in- ms) after each action
         //             3. whether display the gui
 	  
 	agents:
-		aSlow teamFZSlow;
-		aMiddle teamFZMiddle;
-		aFast teamFZFast;
+		aSlow teamASlow;
+		aMiddle teamAMiddle;
+		aFast teamAFast;
 		bSlow teamFZSlow;
 		bMiddle teamFZMiddle;
 		bFast teamFZFast;
-		aDruid teamFZDruid;
+		aDruid teamADruid;
 		bDruid teamFZDruid;
 }

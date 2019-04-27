@@ -96,7 +96,7 @@ import java.util.LinkedList;
         
         public depotModel(){
             money=0;
-            items=new int[]{13,50,40,50,40};
+            items=new int[]{0,0,0,0,0};
         }
         
     }
