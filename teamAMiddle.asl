@@ -27,17 +27,17 @@ position(-1,-1).
 +step(X): water(A,B) & pos(A,B)& not(water(A,B-1)) <- do(up).
 +step(X): water(A,B) & pos(A,B)& not(water(A,B+1)) <- do(down).*/
 
-+step(X): wood(A,B)&pos(A,B) <- .abolish(position(_,_)); +position(A,B); do(pick);+step(X) .
-+step(X): gold(A,B)&pos(A,B)<-.abolish(position(_,_)); +position(A,B);do(pick); +step(X).
-+step(X): pergamen(A,B)&pos(A,B)<-.abolish(position(_,_)); +position(A,B);do(pick); +step(X).
-+step(X): gloves(A,B) & pos(A,B) <- do(pick);+step(X).
-+step(X): stone(A,B)&pos(A+1,B)<- .abolish(position(_,_)); +position(A+1,B); do(dig,e); +step(X).
-+step(X): stone(A,B) & pos(A-1, B) <- .abolish(position(_,_)); +position(A-1,B); do(dig,w); +step(X).
-+step(X): stone(A,B) & pos(A, B+1) <- .abolish(position(_,_)); +position(A,B+1);do(dig,n); +step(X).
-+step(X): stone(A,B) & pos(A, B-1) <- .abolish(position(_,_)); +position(A,B-1);do(dig,s); +step(X).
-+step(X): not(bag_full) &  position(A,B) & pos(A,B) &not(position(-1,-1)) <- -left; +right; -up; +down; .abolish(position(_,_)); .abolish(returnPos(_,_)); +position(-1,-1); !gov2; +step(X).
-+step(X): not(bag_full) &  position(A,B) & not(position(-1,-1)) <- ?position(A,B); !goBack; +step(X).//!goto(A,B).
-+step(X) <- !gov2; +step(X).
++step(X): wood(A,B)&pos(A,B) <- .abolish(position(_,_)); +position(A,B); do(pick);do(skip) .
++step(X): gold(A,B)&pos(A,B)<-.abolish(position(_,_)); +position(A,B);do(pick); do(skip).
++step(X): pergamen(A,B)&pos(A,B)<-.abolish(position(_,_)); +position(A,B);do(pick); do(skip).
++step(X): gloves(A,B) & pos(A,B) <- do(pick);do(skip).
++step(X): stone(A,B)&pos(A+1,B)<- .abolish(position(_,_)); +position(A+1,B); do(dig,w); do(skip).
++step(X): stone(A,B) & pos(A-1, B) <- .abolish(position(_,_)); +position(A-1,B); do(dig,e); do(skip).
++step(X): stone(A,B) & pos(A, B+1) <- .abolish(position(_,_)); +position(A,B+1);do(dig,n); do(skip).
++step(X): stone(A,B) & pos(A, B-1) <- .abolish(position(_,_)); +position(A,B-1);do(dig,s); do(skip).
++step(X): not(bag_full) &  position(A,B) & pos(A,B) &not(position(-1,-1)) <- .abolish(position(_,_)); .abolish(returnPos(_,_)); +position(-1,-1); !gov2; do(skip).
++step(X): not(bag_full) &  position(A,B) & not(position(-1,-1)) <- ?position(A,B); !goBack; do(skip).//!goto(A,B).
++step(X) <- !gov2; do(skip).
 
 +!goBack: pos(A,B) & returnPos(A+1,B) <- .abolish(returnPos(A+1,B)); do(right).
 +!goBack: pos(A,B) & returnPos(A-1,B) <- .abolish(returnPos(A-1,B)); do(left).
