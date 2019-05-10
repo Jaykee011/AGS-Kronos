@@ -86,7 +86,7 @@ public static class DWObjects{
                return(WOOD);
       if(s.equals("water"))
                return(WATER);
-      if(s.equals("stoen"))
+      if(s.equals("stone"))
                return(STONE);
       if(s.equals("pergamen"))
                return(PERGAMEN);
@@ -692,17 +692,11 @@ public static class DWObjects{
   
   synchronized ActionResult pick(int ag, int dx, int dy)
   {
-      if(MyAgents[ag].getCapacityLeft()<1){
-           logger.warning("Agent " + getAgNameBasedOnId(ag) + " reached its capacity and cannot pick it!");
-           return checkActions(ag, MyAgents[ag].getStepsLeft(), false, "pick");
-      }
           
-    // stone -> spectacles -> gloves -> shoes -> wood -> pergamen -> gold
+    // spectacles -> gloves -> shoes -> water -> stone -> wood -> pergamen -> gold
       
         Location l = getAgPos(ag);
         l.x+=dx; l.y+=dy;
-      
-        // Magicke predmety nepotrebuji kapacitu, jen spravny typ agenta
       
 	if (hasObject(WorldModel.DWObjects.SPECTACLES, l.x, l.y))
 	{
@@ -712,7 +706,7 @@ public static class DWObjects{
 		{
 			logger.warning("Error " +getAgNameBasedOnId(ag)+" tries to take spectacles!");
 			return checkActions(ag, MyAgents[ag].getStepsLeft(), false, "pick");
-		}
+		} 
 	}
 
 	else if(hasObject(WorldModel.DWObjects.GLOVES, l.x, l.y))
@@ -723,7 +717,7 @@ public static class DWObjects{
 		{
 			logger.warning("Error " +getAgNameBasedOnId(ag)+" is trying to take gloves!");
 			return checkActions(ag, MyAgents[ag].getStepsLeft(), false, "pick");
-		}
+		}    
 	}
 
 	else if (hasObject(WorldModel.DWObjects.SHOES, l.x, l.y))
@@ -735,7 +729,7 @@ public static class DWObjects{
 		{
 			logger.warning("Error " +getAgNameBasedOnId(ag)+" is trying to take shoes!");
 			return checkActions(ag, MyAgents[ag].getStepsLeft(), false, "pick");
-		}
+		} 
 	}
     
 // na ostatni potrebujeme kapacitu minimalne 1 
@@ -744,8 +738,13 @@ public static class DWObjects{
 //          snizit volnou kapacitu
 //          oznacit misto k procisteni (o objekt s nejvyssi prioritou)
 
+     if(MyAgents[ag].getCapacityLeft()<1){
+           logger.warning("Agent " + getAgNameBasedOnId(ag) + " reached its capacity and cannot pick it!");
+           return checkActions(ag, MyAgents[ag].getStepsLeft(), false, "pick");
+      }
+ 
 
-      if (hasObject(WorldModel.DWObjects.WATER, l.x, l.y))
+        if (hasObject(WorldModel.DWObjects.WATER, l.x, l.y))
           if(!MyAgents[ag].bagEmpty()){
                 logger.warning("Error " +getAgNameBasedOnId(ag)+" is trying to take water - bag must be empty!");
 		return checkActions(ag, MyAgents[ag].getStepsLeft(), false, "pick");
@@ -753,14 +752,18 @@ public static class DWObjects{
           }
           else
             return pickWater(ag);
-      if (hasObject(WorldModel.DWObjects.STONE, l.x, l.y))
+        if (hasObject(WorldModel.DWObjects.STONE, l.x, l.y))
             return pickStone(ag,l.x,l.y);
-      if (hasObject(WorldModel.DWObjects.WOOD, l.x, l.y))
+        if (hasObject(WorldModel.DWObjects.WOOD, l.x, l.y))
             return pickWood(ag);
         else if (hasObject(WorldModel.DWObjects.PERGAMEN, l.x, l.y))
             return pickPergamen(ag);
         else if (hasObject(WorldModel.DWObjects.GOLD, l.x, l.y))     
             return pickGold(ag);
+
+
+      
+
                
         logger.warning("Error " + getAgNameBasedOnId(ag) + " there is nothing to pick up!!!");
         return checkActions(ag, MyAgents[ag].getStepsLeft(), false, "pick");
@@ -785,9 +788,9 @@ public static class DWObjects{
       else if(direction.equals("s"))
             dy=1;
       else if(direction.equals("e"))
-            dx-=1;
-      else if(direction.equals("w"))
             dx=1;
+      else if(direction.equals("w"))
+            dx-=1;
       else{
           logger.warning("Agent " + getAgNameBasedOnId(ag) + " is trying to dig - wrong direction!");
           return checkActions(ag, MyAgents[ag].getStepsLeft(), false, "pick"); 
@@ -830,10 +833,9 @@ public static class DWObjects{
       return checkActions(ag, MyAgents[ag].getStepsLeft(), false, "drop");
     }
   
-    
     int dropped=0;
     depotModel depot;
-    if(ag<=3)
+    if(ag<3)
         depot=DepotA;
                 else
         depot=DepotB;
@@ -911,6 +913,23 @@ public static class DWObjects{
        }
    }
   
+   
+   private boolean clearPos(Location l){
+     for(int i=16;i<=4096;i=i*2)
+       if(hasObject(i, l.x, l.y))
+            return(false);
+        
+       return(true);
+   }
+   
+   private Location getClearPos(){
+       Location l;
+       l=model.getFreePos();
+       while(!clearPos(l))
+           l=model.getFreePos();
+       return(l);
+   }
+   
     private static void setItems(WorldModel model){
     	
     	Location l;
@@ -947,17 +966,17 @@ public static class DWObjects{
     	}
 
 
-	l= model.getFreePos();
+	l= model.getClearPos();
 	model.add(WorldModel.DWObjects.SPECTACLES, l.x, l.y);
-        l= model.getFreePos();
+        l= model.getClearPos();
 	model.add(WorldModel.DWObjects.SPECTACLES, l.x, l.y);
-	l= model.getFreePos();
+	l= model.getClearPos();
 	model.add(WorldModel.DWObjects.SHOES, l.x, l.y);
-        l= model.getFreePos();
+        l= model.getClearPos();
 	model.add(WorldModel.DWObjects.SHOES, l.x, l.y);
-	l= model.getFreePos();
+	l= model.getClearPos();
 	model.add(WorldModel.DWObjects.GLOVES, l.x, l.y);
-        l= model.getFreePos();
+        l= model.getClearPos();
 	model.add(WorldModel.DWObjects.GLOVES, l.x, l.y);
 
 //    	model.setInitialNbGolds(model.countObjects(WorldModel.DWObjects.GOLD));

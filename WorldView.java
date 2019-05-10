@@ -124,7 +124,7 @@ public class WorldView extends GridWorldView
     p.add(jGoldsC);
     msg.add(p);
     p = new JPanel(new FlowLayout(FlowLayout.CENTER));
-    p.add(new JLabel("Depot A (P,S,Wt,Wd,G)::"));
+    p.add(new JLabel("Depot B (P,S,Wt,Wd,G)::"));
     jWoodsC = new JLabel("0,0,0,0,0");
     p.add(jWoodsC);
     msg.add(p);
