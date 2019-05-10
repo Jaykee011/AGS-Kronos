@@ -1,4 +1,5 @@
 position(-1,-1).
+flag.
 
 +step(0) <- .println("START"); ?grid_size(A,B); +right(A); +down(B);+down; +right; !start.
 +step(X): moves_per_round(6) <- !start; !start.
@@ -8,8 +9,20 @@ position(-1,-1).
 
 +!action: moves_left(A) & A > 1 <- do(skip).
 +!action: returning <- !goBack.
-+!action: bag_full & depot(A,B) & pos(A,B) <- drop(all); -left; +right; -up; +down; +returning.
-+!action: bag_full & depot(A,B) & pos(C,D) <- +returnPos(C,D); !goto(A,B).
++!action: bag_full & depot(A,B) & pos(A,B) <- drop(all); -left; -right; -up; -down; ?direction(X,Y); +X; +Y; -direction(X,Y); +flag; +returning.
++!action: bag_full & depot(A,B) & pos(C,D) 
+          <- if (flag) {
+               if (right) {if (down) {+direction(right,down)}
+                           else {+direction(right,up)}
+                          }
+               else {if (down) {+direction(left,down)}
+                     else {+direction(left,up)
+                    }
+               }
+               -flag;
+             }
+             +returnPos(C,D);
+             !goto(A,B).
 +!action: wood(A,B) & pos(A,B) <- .abolish(position(_,_)); +position(A,B); do(pick).
 +!action: gold(A,B) & pos(A,B) <- .abolish(position(_,_)); +position(A,B); do(pick).
 +!action: pergamen(A,B) & pos(A,B) <- .abolish(position(_,_)); +position(A,B); do(pick).
@@ -19,7 +32,7 @@ position(-1,-1).
 +!action: pos(A,B) & stone(A,B+1) <- .abolish(position(_,_)); +position(A,B); do(dig,s).
 +!action: pos(A,B) & stone(A,B-1) <- .abolish(position(_,_)); +position(A,B); do(dig,n).
 +!action: not(bag_full) &  position(A,B) & pos(A,B) & not(position(-1,-1)) <- .abolish(position(_,_)); .abolish(returnPos(_,_)); +position(-1,-1); !gov2.
-+!action: not(bag_full) &  position(A,B) & not(position(-1,-1)) <- ?position(A,B); !goBack.
++!action: not(bag_full) &  position(A,B) & not(position(-1,-1)) <- !goBack.
 +!action <- !gov2.
 
 +!goto(A,B): pos(C,D) & C < A & not(notRight) <- -left; +right; -notLeft; -notDown; -notUp;  !gov2.
@@ -35,7 +48,7 @@ position(-1,-1).
 +!goBack: pos(A,B) & returnPos(A-1,B) <- .abolish(returnPos(A-1,B)); do(left).
 +!goBack: pos(A,B) & returnPos(A,B+1) <- .abolish(returnPos(A,B+1)); do(down).
 +!goBack: pos(A,B) & returnPos(A,B-1) <- .abolish(returnPos(A,B-1)); do(up).
-+!goBack <- -returning; do(skip).
++!goBack <- -returning; !gov2.
 
  //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
