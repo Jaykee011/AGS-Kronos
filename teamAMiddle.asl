@@ -11,7 +11,7 @@ position(-1,-1).
 
 
 
-+step(0) <- .println("START");?grid_size(A,B);+right(A);+down(B);+down; +right; ?pos(C,D); +firstPos(C,D); +secondPos(C,D); !gov2; do(skip).
++step(0) <- .println("START");?grid_size(A,B);+right(A);+down(B);+down; +right; +myright; +mydown; ?pos(C,D); !gov2; do(skip).
 
 
  +!goto(X,Y): (stone(X,Y) | pos(X,Y)) <-    +right; -left; -down; -up; !clearforbidden; !clearlast; 
@@ -157,7 +157,7 @@ position(-1,-1).
                             }
                             else {do(right);}.
 
-
+							
 +step(X):bag_full & depot(A,B)& pos(A,B)<-drop(all); -left; +right; -up; +down; ?position(C,D).
 
 //+step(X):bag_full & depot(A,B) & pos(A,B) <- -left; +right; -up; +down; drop(all).
@@ -283,6 +283,34 @@ position(-1,-1).
 													+canGoU(f);
 												}.
 +!canGoUp <- +canGoU(f).
+
+
+/*+!gov2: myright & mydown & pos(A,B) & water(A,B) & right(C) & A > C-5 <- -myright; +myleft; do(down). 
++!gov2: myright & mydown & pos(A,B) & water(A,B) & down(C) & B > C-3 <- -mydown; +myup; !gov2.
++!gov2: myright & mydown & pos(A,B) & A < 54 & B < 54 <- !goto(A+1,B).
++!gov2: myright & mydown & pos(A,B) & A == 54 & B < 54 <- -myright; +myleft; !goto(A,B+1).
++!gov2: myright & mydown & pos(A,B) & A == 54 & B == 54 <- -myright; +myleft; -mydown; +myup; !goto(A-1,B-1).
+
++!gov2: myleft & mydown & pos(A,B) & water(A,B) & right(C) & A < 5 <- -left; +right; do(down). 
++!gov2: myleft & mydown & pos(A,B) & water(A,B) & down(C) & B > C-3 <- -down; +up; !gov2.
++!gov2: myleft & mydown & pos(A,B) & A > 0 & B < 54 <- !goto(A-1,B).
++!gov2: myleft & mydown & pos(A,B) & A == 0 & B < 54 <- +myright; -myleft; !goto(A,B+1).
++!gov2: myleft & mydown & pos(A,B) & A == 0 & B == 54 <- +myright; -myleft; -mydown; +myup; !goto(A+1,B-1).
+
++!gov2: myright & myup & pos(A,B) & water(A,B) & right(C) & A > C-5 <- -right; +left; do(up). 
++!gov2: myright & myup & pos(A,B) & water(A,B) & down(C) & B < 3 <- -up; +down; !gov2.
++!gov2: myright & myup & pos(A,B) & A < 54 & B > 0 <- !goto(A+1,B).
++!gov2: myright & myup & pos(A,B) & A == 54 & B > 0 <- -myright; +myleft; !goto(A,B-1).
++!gov2: myright & myup & pos(A,B) & A == 54 & B == 0 <- -myright; +myleft; +mydown; -myup; !goto(A-1,B+1).
+
++!gov2: myleft & myup & pos(A,B) & water(A,B) & right(C) & A < 5 <- -left; +right; do(up). 
++!gov2: myleft & myup & pos(A,B) & water(A,B) & down(C) & B < 3 <- -up; +down; !gov2.
++!gov2: myleft & mydown & pos(A,B) & A > 0 & B > 0 <- !goto(A-1,B).
++!gov2: myleft & mydown & pos(A,B) & A == 0 & B > 0 <- +myright; -myleft; !goto(A,B-1).
++!gov2: myleft & mydown & pos(A,B) & A == 0 & B == 0 <- +myright; -myleft; +mydown; -myup; !goto(A+1,B+1).*/
+
+
+
 
  //pohyb zlava doprava - zakladny pohyb, ked nenesiem nic v backpacku
  //mozem ist doprava dole
