@@ -41,14 +41,14 @@ boolean.
     +step(X): dowseSomeRod <- !dowsingRod.
     +step(X): gathering <- !gather.
 
+//water gathering
     +!gather: atWater <- -atWater; do(pick); -gotoWater; +gotoDepo; ?depot(X,Y); +goal(X,Y); -left; +right; -atWater.//!goto.
     +!gather: atDepo <- -atDepo; drop(all); -gotoDepo; +gotoWater; ?wattaah(U,V); +goal(U,V); -right; +left; -atDepo.//!goto.
     +!gather <- !goto.
 
 //find water
-    //+!dowsingRod: water(A,B)&waterLeft <- !nearestWater; ?goal(C,D); -goal(C,D); ?wattaah(X,Y); +goal(X,Y); -findWater; -dowseSomeRod; +gotoWater; +gathering; !gather.
-    +!dowsingRod: pos(A,B)&water(C,D) <- !nearestWater; ?goal(X,Y); -goal(X,Y); ?wattaah(F,G); +goal(F,G); -findWater; -dowseSomeRod; +gathering; +gotoWater; !goto.
-    +!dowsingRod: pos(3, B) <- !clearforbidden; !clearlast; ?goal(X,Y); -goal(X,Y); -findWater; -waterLeft; -left; +right; ?pos(A,B); +goal(52, B); !goto.
+    +!dowsingRod: pos(A,B)&water(C,D) <- !nearestWater; .abolish(goal(_,_)); ?wattaah(F,G); +goal(F,G); -findWater; -dowseSomeRod; +gathering; +gotoWater; !goto.
+    +!dowsingRod: pos(3, B) <- !clearforbidden; !clearlast; .abolish(goal(_,_)); -findWater; -waterLeft; -left; +right; ?pos(A,B); +goal(52, B); !goto.
     +!dowsingRod <- !goto.
 
     +!nearestWater <- for (water(A,B)) {
@@ -97,7 +97,7 @@ boolean.
 
 
 //GOTO
-    +!goto: goal(X,Y)&(stone(X,Y) | pos(X,Y)) <-    ?goal(A,B); -goal(A,B); +right; -left; -down; -up; !clearforbidden; !clearlast; 
+    +!goto: goal(X,Y)&(stone(X,Y) | pos(X,Y)) <-    .abolish(goal(_,_)); +right; -left; -down; -up; !clearforbidden; !clearlast; 
                                                     if (gotoing) {-gotoing}; 
                                                     if (toScout) {+scouting; !scout}
                                                     elif (findWater) {?depot(C,D); +goal(1,D); -gotoDepo; -right; -up; -down; +left; +dowseSomeRod; !dowsingRod}
