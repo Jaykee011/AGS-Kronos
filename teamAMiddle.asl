@@ -2,18 +2,160 @@
 */
 position(-1,-1).
 
-+step(0) <- .println("START");?grid_size(A,B);+right(A);+down(B);+down; +right; ?pos(C,D); +firstPos(C,D); +secondPos(C,D); !gov2; +step(0); .abolish(secondPos(_,_)); +secondPos(C,D).
+   +!clearlast <- -lastleft; -lastright; -lastup; -lastdown.
+    +!clearforbidden <- -notup; -notdown; -notleft; -notright.
+    +!checkWaterUp <- ?pos(A,B); if (water(A,B)&water(A+1,B-1)&water(A,B-1)&water(A-1,B-1)) {+boolean} else {-boolean}.
+    +!checkWaterDown <- ?pos(A,B); if (water(A,B)&water(A+1,B+1)&water(A-1,B+1)&water(A,B+1)) {+boolean} else {-boolean}.
+    +!checkWaterLeft <- ?pos(A,B); if (water(A,B)&water(A-1,B)&((water(A-1,B+1)|B==0)&(water(A-1,B-1)|B==54))) {+boolean} else {-boolean}.
+    +!checkWaterRight <- ?pos(A,B); if (water(A,B)&water(A+1,B)&((water(A+1,B+1)|B==0)&(water(A+1,B-1)|B==54))) {+boolean} else {-boolean}.
 
 
 
-+!goto(A,B): pos(C,D) & C<A  & not(notRight) <- -left; +right; -notLeft; -notDown; -notUp;  !gov2.
-+!goto(A,B): pos(C,D) & C<A & notRight <- !gov2.
-+!goto(A,B): pos(C,D) & C > A & not(notLeft) <- -right; +left; -notRight; -notDown; -notUp; !gov2.
-+!goto(A,B): pos(C,D) & C > A & notLeft <- !gov2.
-+!goto(A,B): pos(C,D) & D < B & not(notDown) <- -up; +down; -notLeft; -notRight; -notUp; !go2.
-+!goto(A,B): pos(C,D) & D < B & notDown <-  !go2.
-+!goto(A,B): pos(C,D) & D > B & not(notUp) <- -down; +up; -notLeft; -notRight; -notDown; !go2.
-+!goto(A,B): pos(C,D) & D > B & notUp<- !go2.
++step(0) <- .println("START");?grid_size(A,B);+right(A);+down(B);+down; +right; ?pos(C,D); +firstPos(C,D); +secondPos(C,D); !gov2; do(skip).
+
+
+ +!goto(X,Y): (stone(X,Y) | pos(X,Y)) <-    +right; -left; -down; -up; !clearforbidden; !clearlast; 
+ 													-goBack;
+													
+                                                    do(skip); do(skip).
+    +!goto(X,Y) <- ?pos(A,B); if (not obstacle & X<A) {+left; -right} elif (not obstacle & X>A) {+right; -left}; 
+                                     if (not obstacle & Y>B) {+down; -up} elif (not obstacle & Y<B) {+up; -down}; 
+                                     if (not obstacle & X==A) {-left; -right}; 
+                                     if (not obstacle & Y==B) {-up; -down};
+                                     !resolveObstacles.
+
+
+    +!resolveObstacles: up <-  ?pos(A,B); !checkWaterUp; if (lastdown | notup | stone(A,B-1) | boolean | nogo(A,B-1) | (B==0)) {
+                                                +obstacle;
+                                                if (goal(C,D)&C<A){
+                                                    !checkWaterLeft; if (lastright | notleft | stone(A-1,B) | boolean | nogo(A-1,B) | (A==0)) {
+                                                        !checkWaterRight; if (lastleft | notright | stone(A+1,B) | boolean | nogo(A+1,B) | (A==54)) {
+                                                            +nogo(A,B); !clearlast; /*+notup;*/ +lastdown; do(down);
+                                                        } 
+                                                        else {!clearlast; +lastright; do(right);}
+                                                    } 
+                                                    else{!clearlast; +lastleft; do(left);}
+                                                }
+                                                else{
+                                                    !checkWaterRight; if (lastleft | notright | stone(A+1,B) | boolean | nogo(A+1,B) | (A==54)) {
+                                                        !checkWaterLeft; if (lastright | notleft | stone(A-1,B) | boolean | nogo(A-1,B) | (A==0)) {
+                                                            +nogo(A,B); !clearlast; /*+notup;*/ +lastdown; do(down);
+                                                        } 
+                                                        else {!clearlast; +lastleft; do(left);}
+                                                    } 
+                                                    else {!clearlast; +lastright; do(right);}
+                                                }
+                                          } 
+                                          else {!clearforbidden; !clearlast; +lastup; -obstacle; do(up);}.
+
+    +!resolveObstacles: right <- ?pos(A,B); !checkWaterRight; if (water(A,B)&water(A+1,B)&water(A+2,B)&((water(A+1,B+1)&B==0)|(water(A+1,B-1)&B==54))){
+                                                +riverCrossing; if (B==0) {-up; +down;} else {-down; +up;}; !clearlast; !clearforbidden; !crossRiver;
+                                            }
+                                            elif (lastleft | notright | stone(A+1,B) | boolean | nogo(A+1,B) | (A==54)) {
+                                                +obstacle;
+                                                if (goal(C,D)&D<A){
+                                                    !checkWaterUp; if (lastdown | notup | stone(A,B-1) | boolean | nogo(A,B+1) | (B==0)) {
+                                                        !checkWaterDown; if (lastup | notdown | stone(A,B+1) | boolean | nogo(A,B-1)| (B==54)) {
+                                                            +nogo(A,B); !clearlast; /*+notright;*/ +lastleft; do(left);
+                                                        } 
+                                                        else {!clearlast; +lastdown; do(down);}
+                                                    } 
+                                                    else{!clearlast; +lastup; do(up);}
+                                                }
+                                                else{
+                                                    !checkWaterDown; if (lastup | notdown | stone(A,B+1) | boolean | nogo(A,B-1)| (B==54)) {
+                                                        !checkWaterUp; if (lastdown | notup | stone(A,B-1) | boolean | nogo(A,B+1) | (B==0)) {
+                                                            +nogo(A,B); !clearlast;  /*+notright;*/ +lastleft; do(left);
+                                                        } 
+                                                        else {!clearlast; +lastup; do(up);}
+                                                    } 
+                                                    else {!clearlast; +lastdown; do(down);}
+                                                }
+                                            }
+                                            else {!clearforbidden; !clearlast; +lastright; -obstacle; do(right);}.
+
+    +!resolveObstacles: down <- ?pos(A,B); !checkWaterDown; if (lastup | notdown | stone(A,B+1) | boolean | nogo(A,B+1)| (B==54)) {
+                                                +obstacle;
+                                                if (goal(C,D)&C<A){
+                                                    !checkWaterLeft; if (lastright | notleft | stone(A-1,B) | boolean | nogo(A-1,B) | (A==0)) {
+                                                        !checkWaterRight; if (lastleft | notright | stone(A+1,B) | boolean | nogo(A+1,B) | (A==54)) {
+                                                            +nogo(A,B); !clearlast; /*+notdown;*/ +lastup; do(up);
+                                                        } 
+                                                        else {!clearlast; +lastright; do(right);}
+                                                    } 
+                                                    else{!clearlast; +lastleft; do(left);}
+                                                }
+                                                else{
+                                                    !checkWaterRight; if (lastleft | notright | stone(A+1,B) | boolean | nogo(A+1,B) | (A==54)) {
+                                                        !checkWaterLeft; if (lastright | notleft | stone(A-1,B) | boolean | nogo(A-1,B) | (A==0)) {
+                                                            +nogo(A,B); !clearlast; /*+notdown;*/ +lastup; do(up);
+                                                        } 
+                                                        else {!clearlast; +lastleft; do(left);}
+                                                    } 
+                                                    else {!clearlast; +lastright; do(right);}
+                                                }
+                                           } 
+                                           else {!clearforbidden; !clearlast; +lastdown; -obstacle; do(down);}.
+
+    +!resolveObstacles: left <- ?pos(A,B); !checkWaterLeft; if (water(A,B)&water(A-1,B)&water(A-2,B)&((water(A-1,B+1)&B==0)|(water(A-1,B-1)&B==54))){
+                                                +riverCrossing; if (B==0) {-up; +down;} else {-down; +up;}; !clearlast; !clearforbidden; !crossRiver;
+                                            }
+                                            elif (lastright | notleft | stone(A-1,B) | boolean | nogo(A-1,B) | (A==0)) {
+                                                +obstacle;
+                                                if (goal(C,D)&D<A){
+                                                    !checkWaterUp; if (lastup | notup | stone(A,B-1) | boolean | nogo(A,B-1) | (B==0)) {
+                                                        !checkWaterDown; if (lastdown | notdown | stone(A,B+1) | boolean | nogo(A,B+1)| (B==54)) {
+                                                            +nogo(A,B); !clearlast; /*+notleft;*/ +lastright; do(right);
+                                                        } 
+                                                        else {!clearlast; +lastdown; do(down);}
+                                                    } 
+                                                    else{!clearlast; +lastup;do(up);}
+                                                }
+                                                else{
+                                                    !checkWaterDown; if (lastup | notdown | stone(A,B+1) | boolean | nogo(A,B+1)| (B==54)) {
+                                                        !checkWaterUp; if (lastdown | notup | stone(A,B-1) | boolean | nogo(A,B-1) | (B==0)) {
+                                                            +nogo(A,B); !clearlast; /*+notleft;*/ +lastright; do(right);
+                                                        } 
+                                                        else {!clearlast; +lastup; do(up);}
+                                                    } 
+                                                    else {!clearlast; +lastdown; do(down);}
+                                                }
+                                           } 
+                                           else {!clearforbidden; !clearlast; +lastleft; -obstacle; do(left)}.
+
+
+    +!crossRiver: left <-   ?pos(A,B); !checkWaterLeft; if (pos(16, B)) {-riverCrossing;!goto;}
+                            elif (boolean){
+                                if (up) {
+                                    !checkWaterUp; if (boolean){
+                                        do(right);
+                                    }
+                                    else {do(up);}
+                                }
+                                else{
+                                    !checkWaterDown; if (boolean){
+                                        do(right);
+                                    }
+                                    else {do(down);}
+                                }
+                            }
+                            else {do(left);}.
+    +!crossRiver: right <-  ?pos(A,B); !checkWaterRight; if (pos(33, B)) {-riverCrossing;!goto;}
+                            elif (boolean){
+                                if (up) {
+                                    !checkWaterUp; if (boolean){
+                                        do(left);
+                                    }
+                                    else {do(up);}
+                                }
+                                else{
+                                    !checkWaterDown; if (boolean){
+                                        do(left);
+                                    }
+                                    else {do(down);}
+                                }
+                            }
+                            else {do(right);}.
 
 
 +step(X):bag_full & depot(A,B)& pos(A,B)<-drop(all); -left; +right; -up; +down; ?position(C,D).
@@ -27,6 +169,7 @@ position(-1,-1).
 +step(X): water(A,B) & pos(A,B)& not(water(A,B-1)) <- do(up).
 +step(X): water(A,B) & pos(A,B)& not(water(A,B+1)) <- do(down).*/
 
++step(X): goBack <- ?position(A,B); !goto(A,B); do(skip).
 +step(X): wood(A,B)&pos(A,B) <- .abolish(position(_,_)); +position(A,B); do(pick);do(skip) .
 +step(X): gold(A,B)&pos(A,B)<-.abolish(position(_,_)); +position(A,B);do(pick); do(skip).
 +step(X): pergamen(A,B)&pos(A,B)<-.abolish(position(_,_)); +position(A,B);do(pick); do(skip).
@@ -35,8 +178,8 @@ position(-1,-1).
 +step(X): stone(A,B) & pos(A-1, B) <- .abolish(position(_,_)); +position(A-1,B); do(dig,e); do(skip).
 +step(X): stone(A,B) & pos(A, B+1) <- .abolish(position(_,_)); +position(A,B+1);do(dig,n); do(skip).
 +step(X): stone(A,B) & pos(A, B-1) <- .abolish(position(_,_)); +position(A,B-1);do(dig,s); do(skip).
-+step(X): not(bag_full) &  position(A,B) & pos(A,B) &not(position(-1,-1)) <- .abolish(position(_,_)); .abolish(returnPos(_,_)); +position(-1,-1); !gov2; do(skip).
-+step(X): not(bag_full) &  position(A,B) & not(position(-1,-1)) <- ?position(A,B); !goBack; do(skip).//!goto(A,B).
++step(X): not(bag_full) &  position(A,B) & pos(A,B) &not(position(-1,-1)) <- .abolish(position(_,_)); .abolish(returnPos(_,_)); +position(-1,-1);!gov2; do(skip).
++step(X): not(bag_full) &  position(A,B) & not(position(-1,-1)) <- ?position(A,B);+goBack; !goto(A,B); do(skip).
 +step(X) <- !gov2; do(skip).
 
 +!goBack: pos(A,B) & returnPos(A+1,B) <- .abolish(returnPos(A+1,B)); do(right).
@@ -291,7 +434,7 @@ position(-1,-1).
 																				}.
 +!gov2: left & up & pos(A,B) & right(C) & A == 0 & down(D) & B > 0 <- +right; -left; -wentRight; -wentDown; -wentLeft; -wentUp; do(up).
 +!gov2: left & up & pos(A,B) & right(C) & A == 0 & down(D) & B == 0 <- +right; -left; +down; -up; -wentRight; -wentDown; -wentLeft; -wentUp; do(down).
-
++!gov2 <- -left; +right; -up; +down; do(skip).
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
