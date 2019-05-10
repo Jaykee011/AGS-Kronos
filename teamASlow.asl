@@ -41,15 +41,34 @@ boolean.
     +step(X): dowseSomeRod <- !dowsingRod.
     +step(X): gathering <- !gather.
 
-    +!gather: atWater <- -atWater; do(pick); .wait({+step(S)}); -gotoWater; +gotoDepo; ?depot(X,Y); +goal(X,Y); !goto.
-    +!gather: atDepo <- -atDepo; drop(all); .wait({+step(S)}); -gotoDepo; +gotoWater; ?wattaah(U,V); +goal(U,V); !goto.
+    +!gather: atWater <- -atWater; do(pick); -gotoWater; +gotoDepo; ?depot(X,Y); +goal(X,Y); -left; +right; -atWater.//!goto.
+    +!gather: atDepo <- -atDepo; drop(all); -gotoDepo; +gotoWater; ?wattaah(U,V); +goal(U,V); -right; +left; -atDepo.//!goto.
     +!gather <- !goto.
 
 //find water
-    +!dowsingRod: water(A,B)&waterLeft <- +wattaah(A,B); ?goal(C,D); -goal(C,D); +goal(A,B); -findWater; -dowseSomeRod; +gotoWater; +gathering; !gather.
-    +!dowsingRod: pos(A,B)&water(C,B) <- ?pos(A,B); if(water(C,B)) {+wattaah(C,B)}; ?goal(X,Y); -goal(X,Y); +goal(C,B); -findWater; -dowseSomeRod; +gathering; +gotoWater; !goto.
+    //+!dowsingRod: water(A,B)&waterLeft <- !nearestWater; ?goal(C,D); -goal(C,D); ?wattaah(X,Y); +goal(X,Y); -findWater; -dowseSomeRod; +gotoWater; +gathering; !gather.
+    +!dowsingRod: pos(A,B)&water(C,D) <- !nearestWater; ?goal(X,Y); -goal(X,Y); ?wattaah(F,G); +goal(F,G); -findWater; -dowseSomeRod; +gathering; +gotoWater; !goto.
     +!dowsingRod: pos(3, B) <- !clearforbidden; !clearlast; ?goal(X,Y); -goal(X,Y); -findWater; -waterLeft; -left; +right; ?pos(A,B); +goal(52, B); !goto.
     +!dowsingRod <- !goto.
+
+    +!nearestWater <- for (water(A,B)) {
+                        .print(A,"|",B)
+                        if (wattaah(X,Y)){
+                            ?wattaah(X,Y)
+                            ?pos(C,D);
+                            if (X > C) {+tempX(X-C);} else {+tempX(C-X);};
+                            if (Y > D) {+tempY(Y-D);} else {+tempY(D-Y);};
+                            ?tempX(E); ?tempY(F); +temp1(E+F); -tempX(E); -tempY(F);
+                            if (A > C) {+tempX(A-C);} else {+tempX(C-A);};
+                            if (B > D) {+tempY(B-D);} else {+tempY(D-B);};
+                            ?tempX(L); ?tempY(K); +temp2(L+K); -tempX(L); -tempY(K);
+                            ?temp1(T); ?temp2(G); -temp1(T); -temp2(G);
+                            if (T > G) {.print(X,Y,"X",A,B,"|",T,"X",G);-wattaah(X,Y); +wattaah(A,B);}
+                        }
+                        else{
+                            +wattaah(A,B);
+                        };
+                    }.
 
 //snake scout
     //water pathing
