@@ -2,17 +2,8 @@
 //Author: Jakub Zapletal (xzaple36)
 //File: Agent with farsight
 
-trusted(teamAFast).
-trusted(teamAMiddle).
-trusted(teamASlow).
-trusted(teamADruid).
-
-glovesneeded.
-spectaclesneeded.
-bootsneeded.
-
 //Faze bystrozora:
-////preparation - snaha dostat se do leveho horniho rohu pro zacatek scoutingu
+////gotoing - snaha dostat se na urcity koordinat
 ////adjustment - zmena Y pozice agenta pri hadim pohybu
 ////scouting - mapovani hry <- zacina v tomto stavu
 //////spiralovite prohledavani prostoru hry -> dostane se do leveho horniho rohu a pak postupuje po radcich tak aby mel nejlepsi pokryti
@@ -23,6 +14,9 @@ bootsneeded.
 ////gathering - sber surovin
 //////Jakmile doscoutoval nebo nastava nouzova situace
 
+bootsneeded.
+glovesneeded.
+spectaclesneeded.
 //this counter is used as to not skip a portion of the map when trying to get around water while scouting
 waterCounter(0).
 
@@ -40,13 +34,22 @@ boolean.
 
 
 //controller
-    +step(0) <- +toScout; +preparation; +left; +down; +goal(22,40); !goto.
-    +step(X): spectacles(X,Y) & goto(V,W) <- do(skip).
+    +step(0) <- ?depot(X,Y); +toGather; +gotoing; +left; +down; +findWater; +waterLeft; +goal(X,Y); !goto.
     +step(X): riverCrossing <- !crossRiver.
-    +step(X): preparation <- !goto.
-    +step(X): gotoing <-
+    +step(X): gotoing <- !goto.
     +step(X): scouting <- !scout.
-    +step(X): gathering <- .println("finished"); do(skip). 
+    +step(X): dowseSomeRod <- !dowsingRod.
+    +step(X): gathering <- !gather.
+
+    +!gather: atWater <- -atWater; do(pick); .wait({+step(S)}); -gotoWater; +gotoDepo; ?depot(X,Y); +goal(X,Y); !goto.
+    +!gather: atDepo <- -atDepo; drop(all); .wait({+step(S)}); -gotoDepo; +gotoWater; ?wattaah(U,V); +goal(U,V); !goto.
+    +!gather <- !goto.
+
+//find water
+    +!dowsingRod: water(A,B)&waterLeft <- +wattaah(A,B); ?goal(C,D); -goal(C,D); +goal(A,B); -findWater; -dowseSomeRod; +gotoWater; +gathering; !gather.
+    +!dowsingRod: pos(A,B)&water(C,B) <- ?pos(A,B); if(water(C,B)) {+wattaah(C,B)}; ?goal(X,Y); -goal(X,Y); +goal(C,B); -findWater; -dowseSomeRod; +gathering; +gotoWater; !goto.
+    +!dowsingRod: pos(3, B) <- !clearforbidden; !clearlast; ?goal(X,Y); -goal(X,Y); -findWater; -waterLeft; -left; +right; ?pos(A,B); +goal(52, B); !goto.
+    +!dowsingRod <- !goto.
 
 //snake scout
     //water pathing
@@ -75,10 +78,12 @@ boolean.
 
 
 //GOTO
-    +!goto: goal(X,Y)&(stone(X,Y) | pos(X,Y)) <-    +right; -left; -down; -up; !clearforbidden; !clearlast; 
-                                                    if (preparation) {-preparation}; 
-                                                    if (toScout) {+scouting; !scout} 
-                                                    elif (toGather) {+gathering; !gather}.
+    +!goto: goal(X,Y)&(stone(X,Y) | pos(X,Y)) <-    ?goal(A,B); -goal(A,B); +right; -left; -down; -up; !clearforbidden; !clearlast; 
+                                                    if (gotoing) {-gotoing}; 
+                                                    if (toScout) {+scouting; !scout}
+                                                    elif (findWater) {?depot(C,D); +goal(1,D); -gotoDepo; -right; -up; -down; +left; +dowseSomeRod; !dowsingRod}
+                                                    elif (gotoWater) {+atWater; !gather}
+                                                    elif (gotoDepo) {+atDepo; !gather}.
     +!goto <- ?goal(X,Y); ?pos(A,B); if (not obstacle & X<A) {+left; -right} elif (not obstacle & X>A) {+right; -left}; 
                                      if (not obstacle & Y>B) {+down; -up} elif (not obstacle & Y<B) {+up; -down}; 
                                      if (not obstacle & X==A) {-left; -right}; 
@@ -217,33 +222,3 @@ boolean.
                                 }
                             }
                             else {do(right);}.
-
-//circle scout
-    //+!scout: pos(3,B)&left <- -left; +up; do(up).
-    //+!scout: pos(A,3)&up <- -up; +right; do(right).
-    //+!scout: pos(51,B)&right <- -right; +down; do(down).
-    //+!scout: pos(A,51)&down <- -down; +left; do(left).
-    //+!scout: left <- do(left).
-    //+!scout: right <- do(right).
-    //+!scout: up <- do(up).
-    //+!scout: down <- do(down).
-
-
-//+step(X): wood(A,B) & pos(A,B) & not(bag_full)<-do(pick).
-//+step(X): gold(A,B) & pos(A,B) & not(bag_full)<-do(pick).
-//+step(X): pergamen(A,B) & pos(A,B) & not(bag_full)<-do(pick).
-//+step(X): stone(A,B) & pos(A,B) & not(bag_full) <-do(pick).
-//+step(X): water(A,B) & pos(A,B) & not(bag_full) <- do(pick).
-
-
-//+step(X)<-!go.
- 
- // do(right);do(right);do(right);do(left);do(left);do(left).
- 
- //+!go<-do(skip);do(skip);do(skip).
-
-// +!go: right & pos(A,B) & right(C)&A<C-1<- do(right).
-// +!go: right <- -right;+left;do(up).
- 
-// +!go: left & pos(A,B) & A>0 <- do(left).	
-// +!go: left<-  -left;+right;do(up).
