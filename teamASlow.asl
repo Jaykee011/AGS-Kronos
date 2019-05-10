@@ -40,23 +40,31 @@ boolean.
 
 
 //controller
-    +step(0) <- .println("Strike the earth!"); +preparation; +left; +down; +goal(22,40); !goto.
+    +step(0) <- +toScout; +preparation; +left; +down; +goal(22,40); !goto.
+    +step(X): spectacles(X,Y) & goto(V,W) <- do(skip).
     +step(X): riverCrossing <- !crossRiver.
     +step(X): preparation <- !goto.
+    +step(X): gotoing <-
     +step(X): scouting <- !scout.
     +step(X): gathering <- .println("finished"); do(skip). 
 
-//water pathing
+//snake scout
+    //water pathing
     +!scout: water(A,B)&pos(A,B)&waterCounter(7)&left <- -waterCounter(7); +waterCounter(0); -left; +right; do(right).
     +!scout: water(A,B)&pos(A,B)&waterCounter(7)&right <- -waterCounter(7); +waterCounter(0); +left; -right; do(left).
     +!scout: water(A,B)&pos(A,B)&left <- +down; -scouting; +adjusting; do(right); ?waterCounter(W); +waterCounter(W+1); -waterCounter(W); !adjust(1).
     +!scout: water(A,B)&pos(A,B)&right <- +down; -scouting; +adjusting; do(left); ?waterCounter(W); +waterCounter(W+1); -waterCounter(W); !adjust(1).
 
-//finished route
+    //finished route    
     +!scout: pos(3,51)&left <- -scouting; +gathering; do(skip).
     +!scout: pos(51,51)&right <- -scouting; +gathering; do(skip).
+    
+    //scout route
+    +!scout: (pos(3,B)|(pos(A,B)&(stone(C,B)&C>=A-3&C<A)))&left <- -left; +right; +down; -scouting; +adjusting; ?waterCounter(W); -waterCounter(W); +waterCounter(0); do(down); !adjust(6).
+    +!scout: (pos(51,B)|(pos(A,B)&(stone(C,B)&C<=A+3&C>A)))&right <- -right; +left; +down; -scouting; +adjusting; ?waterCounter(W); -waterCounter(W); +waterCounter(0); do(down); !adjust(6).
+    +!scout: left <- do(left).
+    +!scout: right <- do(right).
 
-//snake scout
     //adjusting height - A STEP NEEDS TO HAPPEN BEFORE THE adjust PLAN BECAUSE OF THE wait!!
     +!adjust(X): pos(A,B)&water(A,B+1)&left <- .wait({+step(Y)}); do(left); !adjust(X).
     +!adjust(X): pos(A,B)&water(A,B+1)&right <- .wait({+step(Y)}); do(right); !adjust(X).
@@ -64,16 +72,13 @@ boolean.
     +!adjust(X): pos(A, 51) <- .wait({+step(Y)}); -adjusting; -up; -down; +scouting; !scout.
     +!adjust(X): up <- .wait({+step(Y)}); do(up); !adjust(X-1).
     +!adjust(X): down <- .wait({+step(Y)}); do(down); !adjust(X-1).
-    //scout route
-    +!scout: (pos(3,B)|(pos(A,B)&(stone(C,B)&C<=A+3)))&left <- -left; +right; +down; -scouting; +adjusting; ?waterCounter(W); -waterCounter(W); +waterCounter(0); do(down); !adjust(6).
-    +!scout: (pos(51,B)|(pos(A,B)&(stone(C,B)&C>=A-3)))&right <- -right; +left; +down; -scouting; +adjusting; ?waterCounter(W); -waterCounter(W); +waterCounter(0); do(down); !adjust(6).
-    +!scout: left <- do(left).
-    +!scout: right <- do(right).
 
 
 //GOTO
-    +!goto: goal(X,Y)&stone(X,Y) <- .println("Strike the earth!");do(skip).
-    +!goto: goal(X,Y)&pos(X,Y) <- .println("Strike the earth!");do(skip).
+    +!goto: goal(X,Y)&(stone(X,Y) | pos(X,Y)) <-    +right; -left; -down; -up; !clearforbidden; !clearlast; 
+                                                    if (preparation) {-preparation}; 
+                                                    if (toScout) {+scouting; !scout} 
+                                                    elif (toGather) {+gathering; !gather}.
     +!goto <- ?goal(X,Y); ?pos(A,B); if (not obstacle & X<A) {+left; -right} elif (not obstacle & X>A) {+right; -left}; 
                                      if (not obstacle & Y>B) {+down; -up} elif (not obstacle & Y<B) {+up; -down}; 
                                      if (not obstacle & X==A) {-left; -right}; 
@@ -159,8 +164,8 @@ boolean.
                                             elif (lastright | notleft | stone(A-1,B) | boolean | nogo(A-1,B) | (A==0)) {
                                                 +obstacle;
                                                 if (goal(C,D)&D<A){
-                                                    !checkWaterUp; if (lastdown | notup | stone(A,B+1) | boolean | nogo(A,B+1) | (B==0)) {
-                                                        !checkWaterDown; if (lastup | notdown | stone(A,B-1) | boolean | nogo(A,B-1)| (B==54)) {
+                                                    !checkWaterUp; if (lastup | notup | stone(A,B-1) | boolean | nogo(A,B-1) | (B==0)) {
+                                                        !checkWaterDown; if (lastdown | notdown | stone(A,B+1) | boolean | nogo(A,B+1)| (B==54)) {
                                                             +nogo(A,B); !clearlast; /*+notleft;*/ +lastright; do(right);
                                                         } 
                                                         else {!clearlast; +lastdown; do(down);}
